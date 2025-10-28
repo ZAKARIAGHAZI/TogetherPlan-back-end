@@ -20,7 +20,7 @@ class EventController extends Controller
             $q->where('privacy', 'public')
                 ->orWhereHas('participants', function ($q2) {
                     $q2->where('user_id', Auth::id())
-                        ->where('status', 'accepted');
+                        ->where('status', 'invited');
                 });
         });
 
@@ -47,7 +47,7 @@ class EventController extends Controller
         if ($event->privacy === 'private') {
             $isInvited = $event->participants()
                 ->where('user_id', Auth::id())
-                ->where('status', 'accepted')
+                ->where('status', 'invited')
                 ->exists();
 
             if (!$isInvited && $event->created_by !== Auth::id()) {

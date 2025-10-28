@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\ParticipantController;
 
 
 /*
@@ -37,6 +38,16 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Delete event (only creator)
     Route::delete('/events/{event}', [EventController::class, 'destroy']);
+});
+
+
+// Protected routes (authenticated users only)
+Route::middleware('auth:sanctum')->group(function () {
+    Route::prefix('events/{event}')->group(function () {
+        Route::post('/invite', [ParticipantController::class, 'invite']); // invitation par email
+        Route::post('/respond', [ParticipantController::class, 'respondToInvitation']); // accepter/refuser
+        Route::get('/participants', [ParticipantController::class, 'index']); // liste participants
+    });
 });
 
 

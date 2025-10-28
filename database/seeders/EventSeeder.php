@@ -48,7 +48,7 @@ class EventSeeder extends Seeder
                 Vote::factory()->create([
                     'user_id' => $participant->user_id,
                     'event_id' => $event->id,
-                    'option_id' => $dateOption->id,
+                    'date_option_id' => $dateOption->id,
                     'vote' => ['yes', 'maybe', 'no'][rand(0, 2)],
                 ]);
             }
