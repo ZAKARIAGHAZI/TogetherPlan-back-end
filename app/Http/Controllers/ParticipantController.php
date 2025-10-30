@@ -44,17 +44,14 @@ class ParticipantController extends Controller
                 continue;
             }
 
-            Participant::create([
+            $participant = Participant::create([
                 'event_id' => $eventId,
                 'user_id' => $user->id,
                 'status' => 'invited',
             ]);
 
-            // Envoyer email
-            Mail::raw("Vous avez été invité à l'événement : {$event->title}", function ($message) use ($user) {
-                $message->to($user->email)
-                    ->subject('Invitation TogetherPlan');
-            });
+            // Dispatch event (which triggers listener for DB + email notification)
+            event(new \App\Events\InvitationCreatedEvent($user, $event));
 
             $results[$email] = 'Invitation envoyée';
         }
@@ -68,7 +65,7 @@ class ParticipantController extends Controller
     public function respondToInvitation(Request $request, $eventId)
     {
         $request->validate([
-            'status' => 'required|in:accepted,refused',
+            'status' => 'required|in:accepted,declined',
         ]);
 
         $participant = Participant::where('event_id', $eventId)

@@ -3,7 +3,9 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\GroupController;
 use App\Http\Controllers\ParticipantController;
+use App\Http\Controllers\NotificationController;
 
 
 /*
@@ -48,8 +50,24 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/respond', [ParticipantController::class, 'respondToInvitation']); // accepter/refuser
         Route::get('/participants', [ParticipantController::class, 'index']); // liste participants
     });
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
 });
 
+
+// Routes pour les groupes (authentification requise)
+Route::middleware('auth:sanctum')->group(function () {
+    // Liste tous les groupes
+    Route::get('/groups', [GroupController::class, 'index']);
+    // Crée un nouveau groupe
+    Route::post('/groups', [GroupController::class, 'store']);
+    // Affiche un groupe spécifique
+    Route::get('/groups/{group}', [GroupController::class, 'show']);
+    // Inviter des utilisateurs à un groupe (ajout automatique)
+    Route::post('/groups/{group}/invite', [GroupController::class, 'invite']);
+    // Supprimer un groupe
+    Route::delete('/groups/{group}', [GroupController::class, 'destroy']);
+});
 
 
 require __DIR__ . '/auth.php';

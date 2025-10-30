@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use App\Models\Group;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -33,7 +34,7 @@ class EventController extends Controller
             $query->where('category', $request->category);
         }
 
-        $events = $query->latest()->get();
+        $events = $query->with('group')->latest()->get();
 
         return response()->json($events);
     }
@@ -55,7 +56,7 @@ class EventController extends Controller
             }
         }
 
-        return response()->json($event->load('dateOptions', 'participants'));
+        return response()->json($event->load('dateOptions', 'participants', 'group'));
     }
 
     /**
@@ -66,11 +67,12 @@ class EventController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'location' => 'required|string|max:255',    // required
-            'category' => 'required|string|max:100',    // required
+            'location' => 'required|string|max:255',
+            'category' => 'required|string|max:100',
             'privacy' => 'required|in:public,private',
             'date_options' => 'array',
             'invitees' => 'array', // array of user IDs for private event
+            'group_id' => 'nullable|exists:groups,id', // optional group
         ]);
 
         // Create event
@@ -81,6 +83,7 @@ class EventController extends Controller
             'category' => $validated['category'],
             'privacy' => $validated['privacy'],
             'created_by' => Auth::id(),
+            'group_id' => $validated['group_id'] ?? null,
         ]);
 
         // Add date options if provided
@@ -104,9 +107,23 @@ class EventController extends Controller
             }
         }
 
+        // Add group members automatically if a group is linked
+        if (!empty($validated['group_id'])) {
+            $group = Group::find($validated['group_id']);
+            foreach ($group->users as $user) {
+                if ($user->id !== Auth::id()) {
+                    $event->participants()->create([
+                        'user_id' => $user->id,
+                        'status' => 'invited',
+                    ]);
+                    // Optional: send email notification here
+                }
+            }
+        }
+
         return response()->json([
             'message' => 'Event created successfully',
-            'event' => $event->load('dateOptions', 'participants'),
+            'event' => $event->load('dateOptions', 'participants', 'group'),
         ], 201);
     }
 
@@ -126,13 +143,14 @@ class EventController extends Controller
             'location' => 'sometimes|required|string|max:255',
             'category' => 'sometimes|required|string|max:100',
             'privacy' => 'sometimes|required|in:public,private',
+            'group_id' => 'nullable|exists:groups,id',
         ]);
 
         $event->update($validated);
 
         return response()->json([
             'message' => 'Event updated successfully',
-            'event' => $event,
+            'event' => $event->load('group'),
         ]);
     }
 

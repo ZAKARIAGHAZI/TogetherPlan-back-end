@@ -34,4 +34,9 @@ class Event extends Model
     {
         return $this->hasMany(Participant::class);
     }
+
+    public function group()
+    {
+        return $this->belongsTo(Group::class)->nullable();
+    }
 }
