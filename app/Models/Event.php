@@ -37,6 +37,11 @@ class Event extends Model
 
     public function group()
     {
-        return $this->belongsTo(Group::class)->nullable();
+        return $this->belongsTo(Group::class);
+    }
+
+    public function bestDate()
+    {
+        return $this->belongsTo(DateOption::class, 'best_date_id');
     }
 }

@@ -45,11 +45,18 @@ class EventSeeder extends Seeder
             $event = $participant->event;
             $dateOption = $event->dateOptions()->inRandomOrder()->first();
             if ($dateOption) {
+                $voteValue = ['yes', 'maybe', 'no'][rand(0, 2)];
+                $points = match ($voteValue) {
+                    'yes' => 2,
+                    'maybe' => 1,
+                    'no' => 0,
+                };
                 Vote::factory()->create([
                     'user_id' => $participant->user_id,
                     'event_id' => $event->id,
                     'date_option_id' => $dateOption->id,
-                    'vote' => ['yes', 'maybe', 'no'][rand(0, 2)],
+                    'vote' => $voteValue,
+                    'points' => $points,
                 ]);
             }
         });

@@ -4,18 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Testing\Fluent\Concerns\Has;
 
 class Vote extends Model
 {
-
     use HasFactory;
 
-    
     protected $fillable = [
         'user_id',
         'date_option_id',
+        'event_id',
         'vote',
+        'points',
     ];
 
     // Relationships
@@ -27,5 +26,10 @@ class Vote extends Model
     public function dateOption()
     {
         return $this->belongsTo(DateOption::class);
+    }
+
+    public function event()
+    {
+        return $this->belongsTo(Event::class);
     }
 }

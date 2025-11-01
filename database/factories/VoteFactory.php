@@ -18,10 +18,18 @@ class VoteFactory extends Factory
      */
     public function definition(): array
     {
+        $vote = $this->faker->randomElement(['yes', 'maybe', 'no']);
+
+        $points = match ($vote) {
+            'yes' => 2,
+            'maybe' => 1,
+            default => 0,
+        };
         return [
-            'user_id' => User::inRandomOrder()->first()->id ?? User::factory(),
-            'date_option_id' => DateOption::inRandomOrder()->first()->id ?? DateOption::factory(),
-            'vote' => fake()->randomElement(['yes', 'maybe', 'no']),
+            'user_id' => User::inRandomOrder()->first()->id ?: User::factory()->create()->id,
+            'date_option_id' => DateOption::inRandomOrder()->first()->id ?: DateOption::factory()->create()->id,
+            'vote' => $vote,
+            'points' => $points,
         ];
     }
 }

@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\VoteController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\ParticipantController;
@@ -52,6 +53,9 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+
+    // vote for the best date 
+    Route::post('/votes', [VoteController::class, 'store']);
 });
 
 

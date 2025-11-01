@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('date_option_id')->constrained('date_options')->onDelete('cascade');
             $table->foreignId('event_id')->constrained()->onDelete('cascade');
+            $table->unsignedTinyInteger('points')->default(0);
             $table->enum('vote', ['yes', 'maybe', 'no']);
             $table->timestamps();
         });

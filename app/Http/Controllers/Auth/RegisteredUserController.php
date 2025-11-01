@@ -23,7 +23,7 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
@@ -35,14 +35,14 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
 
-        Auth::login($user);
+        //Auth::login($user);
 
         $token = $user->createToken("api-token")->plainTextToken;
 
         return response()->json([
             'message' => 'Registration successful.',
             'user' => $user,
-            'token' => $token,                  
+            'token' => $token,
         ], 201
 
         );

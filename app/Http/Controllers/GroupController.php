@@ -13,6 +13,24 @@ class GroupController extends Controller
     /**
      * Afficher tous les groupes
      */
+
+
+    /**
+     * @OA\Get(
+     *     path="/api/groups",
+     *     summary="Liste tous les groupes",
+     *     tags={"Groupes"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Liste des groupes",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(ref="#/components/schemas/Group")
+     *         )
+     *     )
+     * )
+     */
     public function index()
     {
         $groups = Group::with('users', 'creator')->get();
@@ -21,6 +39,32 @@ class GroupController extends Controller
 
     /**
      * Créer un nouveau groupe
+     */
+
+    /**
+     * @OA\Post(
+     *     path="/api/groups",
+     *     summary="Créer un nouveau groupe",
+     *     tags={"Groupes"},
+     *     security={{"sanctum":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name"},
+     *             @OA\Property(property="name", type="string", example="Groupe Dev"),
+     *             @OA\Property(property="description", type="string", example="Description du groupe")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Groupe créé avec succès",
+     *         @OA\JsonContent(ref="#/components/schemas/Group")
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Erreur de validation"
+     *     )
+     * )
      */
     public function store(Request $request)
     {
@@ -44,6 +88,31 @@ class GroupController extends Controller
     /**
      * Afficher un groupe spécifique
      */
+
+    /**
+     * @OA\Get(
+     *     path="/api/groups/{id}",
+     *     summary="Afficher un groupe spécifique",
+     *     tags={"Groupes"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID du groupe",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Détails du groupe",
+     *         @OA\JsonContent(ref="#/components/schemas/Group")
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Groupe non trouvé"
+     *     )
+     * )
+     */
     public function show(Group $group)
     {
         $group->load('users', 'creator', 'events');
@@ -52,6 +121,44 @@ class GroupController extends Controller
 
     /**
      * Inviter des utilisateurs par email (ajout automatique au groupe)
+     */
+
+    /**
+     * @OA\Post(
+     *     path="/api/groups/{id}/invite",
+     *     summary="Inviter des utilisateurs par email (ajout automatique au groupe)",
+     *     tags={"Groupes"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID du groupe",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"emails"},
+     *             @OA\Property(
+     *                 property="emails",
+     *                 type="array",
+     *                 @OA\Items(type="string", format="email", example="user@example.com")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Utilisateurs ajoutés et invitations envoyées",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Utilisateurs ajoutés et invitations envoyées !")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Erreur de validation"
+     *     )
+     * )
      */
     public function invite(Request $request, Group $group)
     {
@@ -77,6 +184,33 @@ class GroupController extends Controller
 
     /**
      * Supprimer un groupe
+     */
+
+    /**
+     * @OA\Delete(
+     *     path="/api/groups/{id}",
+     *     summary="Supprimer un groupe",
+     *     tags={"Groupes"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID du groupe",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Groupe supprimé",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Groupe supprimé")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Non autorisé"
+     *     )
+     * )
      */
     public function destroy(Group $group)
     {
