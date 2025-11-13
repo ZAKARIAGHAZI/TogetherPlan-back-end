@@ -17,6 +17,8 @@ class Event extends Model
         'category',
         'privacy',
         'created_by',
+        'best_date_id',
+        'group_id',
     ];
 
     // Relationships

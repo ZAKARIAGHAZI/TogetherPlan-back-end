@@ -1,0 +1,1361 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "TogetherPlan API",
+        "description": "API documentation for the TogetherPlan project. This API allows users to manage events, participants, voting on dates, groups, and notifications.",
+        "contact": {
+            "name": "TogetherPlan Support",
+            "email": "support@togetherplan.com"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://api.togetherplan.com",
+            "description": "Production server"
+        },
+        {
+            "url": "http://localhost:8000",
+            "description": "Local development server"
+        }
+    ],
+    "paths": {
+        "/api/events": {
+            "get": {
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Get list of events",
+                "description": "List all public events or private events if the user is invited",
+                "operationId": "7058ab7c89d20c752b6afd6d808f6526",
+                "parameters": [
+                    {
+                        "name": "location",
+                        "in": "query",
+                        "description": "Filter events by location",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Casablanca"
+                        }
+                    },
+                    {
+                        "name": "category",
+                        "in": "query",
+                        "description": "Filter events by category",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Meeting"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of events",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Event"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Create a new event",
+                "description": "Store a new event",
+                "operationId": "508895e03d7f10edac84357084c87b20",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "location",
+                                    "category",
+                                    "privacy"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "example": "Team Meeting"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Discuss project progress"
+                                    },
+                                    "location": {
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "example": "Casablanca"
+                                    },
+                                    "category": {
+                                        "type": "string",
+                                        "maxLength": 100,
+                                        "example": "Meeting"
+                                    },
+                                    "privacy": {
+                                        "type": "string",
+                                        "enum": [
+                                            "public",
+                                            "private"
+                                        ],
+                                        "example": "private"
+                                    },
+                                    "date_options": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "proposed_date": {
+                                                    "type": "string",
+                                                    "format": "date",
+                                                    "example": "2025-11-15"
+                                                },
+                                                "proposed_time": {
+                                                    "type": "string",
+                                                    "format": "time",
+                                                    "example": "14:30:00"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "invitees": {
+                                        "description": "Array of user IDs to invite",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer",
+                                            "example": 2
+                                        }
+                                    },
+                                    "group_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Event created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Event"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/events/{id}": {
+            "get": {
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Get details of a single event",
+                "description": "Show event details",
+                "operationId": "6f743f71f7a88dbe57be1d9c9ebf47cb",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Event ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Event details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Event"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized to view this event"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Update an existing event",
+                "description": "Update an event",
+                "operationId": "fb130dcf1ab4d7abbd3a173741df1f8f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Event ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "maxLength": 255
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "location": {
+                                        "type": "string",
+                                        "maxLength": 255
+                                    },
+                                    "category": {
+                                        "type": "string",
+                                        "maxLength": 100
+                                    },
+                                    "privacy": {
+                                        "type": "string",
+                                        "enum": [
+                                            "public",
+                                            "private"
+                                        ]
+                                    },
+                                    "group_id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Event updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Event"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized to update this event"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Delete an event",
+                "description": "Delete an event",
+                "operationId": "b8c8f4b41a32532f5e9f7146e511bc61",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Event ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Event deleted successfully"
+                    },
+                    "403": {
+                        "description": "Unauthorized to delete this event"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/groups": {
+            "get": {
+                "tags": [
+                    "Groupes"
+                ],
+                "summary": "Liste tous les groupes",
+                "description": "Afficher tous les groupes",
+                "operationId": "f286cbf34dc4be32a94459a335658168",
+                "responses": {
+                    "200": {
+                        "description": "Liste des groupes",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Group"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Groupes"
+                ],
+                "summary": "Créer un nouveau groupe",
+                "description": "Créer un nouveau groupe",
+                "operationId": "74e9878763e20c38ae5c9930b8d2d3f6",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Groupe Dev"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Description du groupe"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Groupe créé avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Group"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/groups/{id}": {
+            "get": {
+                "tags": [
+                    "Groupes"
+                ],
+                "summary": "Afficher un groupe spécifique",
+                "description": "Afficher un groupe spécifique",
+                "operationId": "38a1f4990d0dc69ead7f7377ad016117",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID du groupe",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Détails du groupe",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Group"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Groupe non trouvé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Groupes"
+                ],
+                "summary": "Supprimer un groupe",
+                "description": "Supprimer un groupe",
+                "operationId": "8c693e934c350f47618655bc71886930",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID du groupe",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Groupe supprimé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Groupe supprimé"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Non autorisé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/groups/{id}/invite": {
+            "post": {
+                "tags": [
+                    "Groupes"
+                ],
+                "summary": "Inviter des utilisateurs par email (ajout automatique au groupe)",
+                "description": "Inviter des utilisateurs par email (ajout automatique au groupe)",
+                "operationId": "fd86a54e9a7275a6bba8511b2b1b766a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID du groupe",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "emails"
+                                ],
+                                "properties": {
+                                    "emails": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "email",
+                                            "example": "user@example.com"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Utilisateurs ajoutés et invitations envoyées",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Utilisateurs ajoutés et invitations envoyées !"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/notifications": {
+            "get": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Get unread notifications for the authenticated user",
+                "description": "List unread notifications",
+                "operationId": "911565ad9aff9ba7eded3f189509e578",
+                "responses": {
+                    "200": {
+                        "description": "List of unread notifications",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "string",
+                                                "example": "uuid-notification-id"
+                                            },
+                                            "type": {
+                                                "type": "string",
+                                                "example": "App\\\\Notifications\\\\NewEventNotification"
+                                            },
+                                            "data": {
+                                                "type": "object",
+                                                "example": {
+                                                    "message": "You have a new event invitation"
+                                                }
+                                            },
+                                            "read_at": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": null,
+                                                "nullable": true
+                                            },
+                                            "created_at": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2025-11-10T10:00:00Z"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/notifications/{id}/read": {
+            "patch": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Mark a notification as read",
+                "description": "Mark a notification as read",
+                "operationId": "65581bb40eba3764fb900f21495814de",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the notification",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "uuid-notification-id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Notification marked as read",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Notification marquée comme lue."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Notification not found or already read",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Notification introuvable ou déjà lue."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/events/{eventId}/invite": {
+            "post": {
+                "tags": [
+                    "Participants"
+                ],
+                "summary": "Inviter des utilisateurs à un événement privé",
+                "description": "Inviter un utilisateur à un événement privé via email",
+                "operationId": "fb4f7b8a449e9d588effabddc27b9410",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "ID de l'événement",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "emails": {
+                                        "description": "Liste des emails à inviter",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "email"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Invitation envoyée ou erreurs par email",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "user1@example.com": "Invitation envoyée",
+                                    "user2@example.com": "Utilisateur introuvable"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Vous ne pouvez pas inviter des participants"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/events/{eventId}/respond": {
+            "post": {
+                "tags": [
+                    "Participants"
+                ],
+                "summary": "Répondre à une invitation à un événement",
+                "description": "Répondre à une invitation (accept/refuse)",
+                "operationId": "c357e712cb22566529c8ab01a5e3d3ba",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "ID de l'événement",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "status"
+                                ],
+                                "properties": {
+                                    "status": {
+                                        "description": "Statut de la réponse",
+                                        "type": "string",
+                                        "enum": [
+                                            "accepted",
+                                            "declined"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Réponse envoyée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invitation accepted avec succès."
+                                        },
+                                        "participant": {
+                                            "$ref": "#/components/schemas/Participant"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Vous n'êtes pas invité à cet événement"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/events/{eventId}/participants": {
+            "get": {
+                "tags": [
+                    "Participants"
+                ],
+                "summary": "Lister les participants d’un événement",
+                "description": "Lister les participants d’un événement",
+                "operationId": "d0dafe7f1c94647911f5b26c378b75d3",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "ID de l'événement",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste des participants",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Participant"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès refusé à cet événement privé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/votes": {
+            "post": {
+                "tags": [
+                    "Votes"
+                ],
+                "summary": "Submit a vote for a date option",
+                "description": "Allows an authenticated user to vote 'yes', 'maybe', or 'no' on a date option. Recalculates the best date for the event.",
+                "operationId": "storeVote",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "date_option_id",
+                                    "vote"
+                                ],
+                                "properties": {
+                                    "date_option_id": {
+                                        "description": "ID of the date option to vote on",
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "vote": {
+                                        "description": "Type of vote",
+                                        "type": "string",
+                                        "enum": [
+                                            "yes",
+                                            "maybe",
+                                            "no"
+                                        ],
+                                        "example": "yes"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Vote submitted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Vote submitted successfully!"
+                                        },
+                                        "vote": {
+                                            "$ref": "#/components/schemas/Vote"
+                                        },
+                                        "best_date_id": {
+                                            "description": "ID of the current best date for the event",
+                                            "type": "integer",
+                                            "example": 16
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "User has already voted for this date option",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "You have already voted for this date."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The date option id field is required."
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "DateOption": {
+                "title": "DateOption",
+                "description": "Schema representing a proposed date option for an event",
+                "required": [
+                    "event_id",
+                    "proposed_date"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "event_id": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "proposed_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-11-15"
+                    },
+                    "proposed_time": {
+                        "type": "string",
+                        "format": "time",
+                        "example": "14:30:00",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-11-03T16:00:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-11-03T16:05:00Z"
+                    },
+                    "event": {
+                        "$ref": "#/components/schemas/Event"
+                    },
+                    "votes": {
+                        "description": "Votes associated with this date option",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Vote"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "Event": {
+                "title": "Event",
+                "description": "Schema representing an event",
+                "required": [
+                    "id",
+                    "title",
+                    "location",
+                    "category",
+                    "privacy",
+                    "created_by"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Team Meeting"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Discuss project progress"
+                    },
+                    "location": {
+                        "type": "string",
+                        "example": "Casablanca"
+                    },
+                    "category": {
+                        "type": "string",
+                        "example": "Meeting"
+                    },
+                    "privacy": {
+                        "type": "string",
+                        "enum": [
+                            "public",
+                            "private"
+                        ],
+                        "example": "private"
+                    },
+                    "created_by": {
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "group_id": {
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "best_date_id": {
+                        "type": "integer",
+                        "example": 10,
+                        "nullable": true
+                    },
+                    "creator": {
+                        "$ref": "#/components/schemas/User"
+                    },
+                    "group": {
+                        "$ref": "#/components/schemas/Group"
+                    },
+                    "participants": {
+                        "description": "List of participants for this event",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Participant"
+                        }
+                    },
+                    "dateOptions": {
+                        "description": "List of proposed date options for this event",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/DateOption"
+                        }
+                    },
+                    "bestDate": {
+                        "$ref": "#/components/schemas/DateOption"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-11-03T15:50:50Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-11-03T15:50:50Z"
+                    }
+                },
+                "type": "object"
+            },
+            "Group": {
+                "title": "Group",
+                "required": [
+                    "id",
+                    "name",
+                    "created_by"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Groupe Dev"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Description du groupe"
+                    },
+                    "created_by": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "users": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "events": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "Participant": {
+                "title": "Participant",
+                "description": "Schema representing a participant in an event",
+                "properties": {
+                    "id": {
+                        "description": "ID du participant",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "event_id": {
+                        "description": "ID de l'événement auquel le participant est associé",
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "user_id": {
+                        "description": "ID de l'utilisateur participant",
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "status": {
+                        "description": "Statut de l'invitation",
+                        "type": "string",
+                        "enum": [
+                            "invited",
+                            "accepted",
+                            "declined"
+                        ],
+                        "example": "invited"
+                    },
+                    "created_at": {
+                        "description": "Date de création du participant",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-11-03T16:00:00Z"
+                    },
+                    "updated_at": {
+                        "description": "Date de dernière mise à jour du participant",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-11-03T16:05:00Z"
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/User"
+                    },
+                    "event": {
+                        "$ref": "#/components/schemas/Event"
+                    }
+                },
+                "type": "object"
+            },
+            "User": {
+                "title": "User",
+                "description": "Schema representing a user",
+                "required": [
+                    "id",
+                    "name",
+                    "email"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Zakaria Ghazi"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "zakariaghazi77@gmail.com"
+                    },
+                    "email_verified_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-11-03T15:50:50Z",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-11-03T15:50:50Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-11-03T15:50:50Z"
+                    },
+                    "groups": {
+                        "description": "Groups the user belongs to",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Group"
+                        }
+                    },
+                    "participants": {
+                        "description": "Participant records for this user",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Participant"
+                        }
+                    },
+                    "events_created": {
+                        "description": "Events created by this user",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Event"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "Vote": {
+                "title": "Vote",
+                "description": "Represents a vote cast by a user for a date option in an event",
+                "properties": {
+                    "id": {
+                        "description": "Vote ID",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "description": "ID of the user who voted",
+                        "type": "integer",
+                        "example": 11
+                    },
+                    "event_id": {
+                        "description": "ID of the event associated with the vote",
+                        "type": "integer",
+                        "example": 6
+                    },
+                    "date_option_id": {
+                        "description": "ID of the date option voted for",
+                        "type": "integer",
+                        "example": 17
+                    },
+                    "vote": {
+                        "description": "Vote choice",
+                        "type": "string",
+                        "enum": [
+                            "yes",
+                            "maybe",
+                            "no"
+                        ],
+                        "example": "yes"
+                    },
+                    "points": {
+                        "description": "Numeric points associated with the vote",
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "created_at": {
+                        "description": "Creation timestamp",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-11-03T15:50:50.000000Z"
+                    },
+                    "updated_at": {
+                        "description": "Last update timestamp",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-11-03T15:50:50.000000Z"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "sanctum": {
+                "type": "http",
+                "description": "Use Laravel Sanctum API token for authentication",
+                "bearerFormat": "Token",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Events",
+            "description": "Endpoints for creating, updating, listing, and deleting events"
+        },
+        {
+            "name": "Participants",
+            "description": "API Endpoints for managing event participants"
+        },
+        {
+            "name": "Votes",
+            "description": "Endpoints for submitting votes on date options and retrieving voting information"
+        },
+        {
+            "name": "Notifications",
+            "description": "API Endpoints for managing user notifications"
+        },
+        {
+            "name": "Groupes",
+            "description": "API Endpoints for managing groups"
+        }
+    ]
+}
