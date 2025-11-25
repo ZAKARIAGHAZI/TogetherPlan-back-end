@@ -88,7 +88,7 @@ class EventController extends Controller
             $query->where('category', $request->category);
         }
 
-        $events = $query->with('creator','group')->latest()->get();
+        $events = $query->with('creator', 'dateOptions','group')->latest()->get();
 
         return response()->json($events);
     }
@@ -129,8 +129,7 @@ class EventController extends Controller
                 return response()->json(['message' => 'You are not authorized to view this private event'], 403);
             }
         }
-
-        return response()->json($event->load('dateOptions', 'participants', 'group'));
+        return response()->json($event->load('creator','dateOptions.votes', 'participants', 'group','bestDate'));
     }
 
     /**
@@ -236,7 +235,7 @@ class EventController extends Controller
 
         return response()->json([
             'message' => 'Event created successfully',
-            'event' => $event->load('dateOptions', 'participants', 'group'),
+            'event' => $event->load('creator','dateOptions', 'participants', 'group'),
         ], 201);
     }
 

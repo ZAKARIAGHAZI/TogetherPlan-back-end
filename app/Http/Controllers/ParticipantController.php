@@ -64,7 +64,7 @@ class ParticipantController extends Controller
             'emails.*' => 'email'
         ]);
 
-        $event = Event::findOrFail($eventId);
+        $event = Event::findOrFail($eventId);   
 
         if ($event->created_by !== Auth::id()) {
             return response()->json(['message' => 'Vous ne pouvez pas inviter des participants.'], 403);

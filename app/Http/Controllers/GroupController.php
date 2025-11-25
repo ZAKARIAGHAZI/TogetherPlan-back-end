@@ -36,7 +36,20 @@ class GroupController extends Controller
      */
     public function index()
     {
-        $groups = Group::with('users', 'creator')->get();
+        $user = auth()->user();
+        
+        // If admin, show all groups
+        if ($user->role === 'admin') {
+            $groups = Group::with('users', 'creator')->get();
+        } else {
+            // Otherwise, show only groups where user is a member
+            $groups = Group::with('users', 'creator')
+                ->whereHas('users', function ($query) use ($user) {
+                    $query->where('user_id', $user->id);
+                })
+                ->get();
+        }
+        
         return response()->json($groups);
     }
 

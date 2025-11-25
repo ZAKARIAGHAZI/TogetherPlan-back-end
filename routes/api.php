@@ -7,6 +7,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\UserController;
 
 
 /*
@@ -71,6 +72,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/groups/{group}/invite', [GroupController::class, 'invite']);
     // Supprimer un groupe
     Route::delete('/groups/{group}', [GroupController::class, 'destroy']);
+});
+
+// Routes pour la gestion des utilisateurs (Admin uniquement)
+Route::middleware('auth:sanctum')->group(function () {
+    // Liste tous les utilisateurs (Admin only)
+    Route::get('/users', [UserController::class, 'index']);
+    // Mettre à jour un utilisateur (User can update self OR Admin can update anyone)
+    Route::put('/users/{id}', [UserController::class, 'update']);
+    // Supprimer un utilisateur (User can delete self OR Admin can delete others)
+    Route::delete('/users/{id}', [UserController::class, 'destroy']);
 });
 
 
