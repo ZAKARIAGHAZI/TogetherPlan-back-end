@@ -158,12 +158,6 @@ class EventController extends Controller
      *                     @OA\Property(property="proposed_time", type="string", format="time", example="14:30:00")
      *                 )
      *             ),
-     *             @OA\Property(
-     *                 property="invitees",
-     *                 type="array",
-     *                 description="Array of user IDs to invite",
-     *                 @OA\Items(type="integer", example=2)
-     *             ),
      *             @OA\Property(property="group_id", type="integer", example=1)
      *         )
      *     ),
@@ -183,7 +177,7 @@ class EventController extends Controller
             'category' => 'required|string|max:100',
             'privacy' => 'required|in:public,private',
             'date_options' => 'array',
-            'invitees' => 'array', // array of user IDs for private event
+            // 'invitees' => 'array', // array of user IDs for private event
             'group_id' => 'nullable|exists:groups,id', // optional group
         ]);
 
@@ -208,16 +202,23 @@ class EventController extends Controller
             }
         }
 
-        // Invite participants if event is private
-        if ($event->privacy === 'private' && !empty($validated['invitees'])) {
-            foreach ($validated['invitees'] as $userId) {
-                $event->participants()->create([
-                    'user_id' => $userId,
-                    'status' => 'invited',
-                ]);
-                // Optional: send email notification here
-            }
-        }
+        //     @OA\Property(
+        //  *                 property="invitees",
+        //  *                 type="array",
+        //  *                 description="Array of user IDs to invite",
+        //  *                 @OA\Items(type="integer", example=2)
+        //  *             ),
+
+        // // Invite participants if event is private
+        // if ($event->privacy === 'private' && !empty($validated['invitees'])) {
+        //     foreach ($validated['invitees'] as $userId) {
+        //         $event->participants()->create([
+        //             'user_id' => $userId,
+        //             'status' => 'invited',
+        //         ]);
+        //         // Optional: send email notification here
+        //     }
+        // }
 
         // Add group members automatically if a group is linked
         if (!empty($validated['group_id'])) {

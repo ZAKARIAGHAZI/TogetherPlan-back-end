@@ -24,6 +24,13 @@ class GroupController extends Controller
      *     summary="Liste tous les groupes",
      *     tags={"Groupes"},
      *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="created_by",
+     *         in="query",
+     *         description="Filtrer pour afficher uniquement les groupes créés par l'utilisateur connecté",
+     *         required=false,
+     *         @OA\Schema(type="boolean")
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Liste des groupes",
@@ -34,21 +41,24 @@ class GroupController extends Controller
      *     )
      * )
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
         
-        // If admin, show all groups
-        if ($user->role === 'admin') {
-            $groups = Group::with('users', 'creator')->get();
+        $query = Group::with('users', 'creator');
+
+        if ($request->query('created_by') === 'true') {
+            $query->where('created_by', $user->id);
+        } else if ($user->hasRole('admin')) {
+            // If admin and no filter, show all groups
         } else {
             // Otherwise, show only groups where user is a member
-            $groups = Group::with('users', 'creator')
-                ->whereHas('users', function ($query) use ($user) {
-                    $query->where('user_id', $user->id);
-                })
-                ->get();
+            $query->whereHas('users', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            });
         }
+        
+        $groups = $query->get();
         
         return response()->json($groups);
     }
